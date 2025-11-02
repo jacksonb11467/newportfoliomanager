@@ -216,15 +216,7 @@
                     Add New User
                 </button>
                 
-                <button onclick="sendTestDigest()" class="btn" style="background: #ff9800; color: white;">
-                    <i data-lucide="mail"></i>
-                    Send Test Daily Digest
-                </button>
-                
-                <button onclick="sendTestWeekly()" class="btn" style="background: #9c27b0; color: white;">
-                    <i data-lucide="calendar"></i>
-                    Send Test Weekly Digest
-                </button>
+
             </div>
             
             <table>
@@ -232,7 +224,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Daily Digest</th>
+                        <th>Scheduled Digest</th>
                         <th>Weekly Digest</th>
                         <th>Actions</th>
                     </tr>
@@ -266,7 +258,7 @@
         <div class="setting-group">
             <h3>
                 <i data-lucide="clock"></i>
-                Update Time
+                Scheduled Digest - Update Time
             </h3>
             <p>What time should updates run? (Brisbane time)</p>
             <input type="time" id="updateTime" value="17:00">
@@ -409,9 +401,12 @@
                             <input type="checkbox" ${user.receiveWeeklyDigest ? 'checked' : ''} 
                                 onchange="updateUserPreference(${user.id}, 'receiveWeeklyDigest', this.checked)">
                         </td>
-                        <td>
-                            <button onclick="deleteUser(${user.id})" class="remove-btn">Delete</button>
-                        </td>
+                        <td style="display: flex; gap: 8px;">
+    <button onclick="changePassword(${user.id})" class="btn" style="background: #0071e3; color: white; padding: 6px 12px; font-size: 12px;">
+        Change Password
+    </button>
+    <button onclick="deleteUser(${user.id})" class="remove-btn">Delete</button>
+</td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -706,6 +701,41 @@
                 alert('Error saving settings');
             }
         }
+        async function changePassword(userId) {
+    const currentPassword = prompt('Enter your current password:');
+    if (!currentPassword) return;
+    
+    const newPassword = prompt('Enter your new password (min 6 characters):');
+    if (!newPassword || newPassword.length < 6) {
+        alert('New password must be at least 6 characters');
+        return;
+    }
+    
+    const confirmPassword = prompt('Confirm your new password:');
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/users/${userId}/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Password changed successfully!');
+        } else {
+            alert('❌ ' + (data.message || 'Failed to change password'));
+        }
+    } catch (error) {
+        console.error('Error changing password:', error);
+        alert('❌ Error changing password');
+    }
+}
     </script>
 </body>
 </html>

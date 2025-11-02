@@ -264,7 +264,32 @@ app.delete('/api/users/:id', isAuthenticated, (req, res) => {
     saveUsers();
     res.json({ success: true });
 });
-
+app.post('/api/users/:id/change-password', isAuthenticated, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { currentPassword, newPassword } = req.body;
+    
+    // Users can only change their own password
+    if (req.session.userId !== userId) {
+        return res.status(403).json({ success: false, message: 'You can only change your own password' });
+    }
+    
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Verify current password
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) {
+        return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+    
+    // Hash and update new password
+    user.password = await bcrypt.hash(newPassword, 10);
+    saveUsers();
+    
+    res.json({ success: true, message: 'Password changed successfully' });
+});
 // Protected API endpoints
 app.get('/api/settings', isAuthenticated, (req, res) => {
     res.json({
