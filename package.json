@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "init-db": "node init-db.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
@@ -20,7 +21,3 @@
     "node": ">=18.0.0"
   }
 }
-"scripts": {
-  "start": "node server.js",
-  "init-db": "node init-db.js"
-},
