@@ -90,14 +90,26 @@ try {
     fs.writeFileSync(USAGE_FILE, JSON.stringify(apiUsage, null, 2));
 }
 
-// Load portfolio
+// Load portfolio from database
 let serverPortfolio = [];
-try {
-    serverPortfolio = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf8'));
-    console.log('Portfolio loaded:', serverPortfolio);
-} catch (error) {
-    serverPortfolio = [];
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+async function loadPortfolio() {
+    try {
+        const result = await pool.query('SELECT ticker FROM portfolio ORDER BY id');
+        serverPortfolio = result.rows.map(row => row.ticker);
+        console.log('Portfolio loaded from database:', serverPortfolio);
+    } catch (error) {
+        console.error('Error loading portfolio:', error);
+        serverPortfolio = [];
+    }
 }
+
+loadPortfolio();
 
 function saveCache() {
     fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
@@ -115,9 +127,6 @@ function saveUsers() {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 }
 
-function savePortfolio() {
-    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(serverPortfolio, null, 2));
-}
 
 function trackAPI(service, ticker) {
     const timestamp = new Date().toISOString();
@@ -439,11 +448,26 @@ app.get('/api/usage', isAuthenticated, (req, res) => {
     res.json(stats);
 });
 
-app.post('/api/sync-portfolio', isAuthenticated, (req, res) => {
-    serverPortfolio = req.body.tickers || [];
-    console.log('Portfolio synced:', serverPortfolio);
-    savePortfolio();
-    res.json({ success: true });
+app.post('/api/sync-portfolio', isAuthenticated, async (req, res) => {
+    try {
+        const tickers = req.body.tickers || [];
+        
+        // Clear existing portfolio
+        await pool.query('DELETE FROM portfolio');
+        
+        // Insert new tickers
+        for (const ticker of tickers) {
+            await pool.query('INSERT INTO portfolio (ticker) VALUES ($1)', [ticker]);
+        }
+        
+        // Reload portfolio in memory
+        await loadPortfolio();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error syncing portfolio:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 app.post('/api/update-all', isAuthenticated, async (req, res) => {
