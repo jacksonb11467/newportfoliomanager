@@ -561,7 +561,18 @@
             });
         }
 
-        let portfolio = JSON.parse(localStorage.getItem('portfolio') || '[]');
+        let portfolio = [];
+
+async function loadPortfolio() {
+    try {
+        const response = await fetch('/api/portfolio');
+        const data = await response.json();
+        portfolio = data.tickers || [];
+        holdings = data.holdings || {};
+    } catch (error) {
+        console.error('Error loading portfolio:', error);
+    }
+}
         let holdings = JSON.parse(localStorage.getItem('holdings') || '{}');
         let asxData = [];
         let intlData = [];
@@ -572,8 +583,8 @@
         let exchangeRates = {};
 
         window.onload = async () => {
-            lucide.createIcons();
-            updateLastUpdatedTime();
+    await loadPortfolio();
+    lucide.createIcons();
             
             if (portfolio.length === 0) {
                 document.getElementById('asx-body').innerHTML = `
