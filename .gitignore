@@ -1,0 +1,9 @@
+node_modules/
+.env
+cache.json
+api-usage.json
+users.json
+portfolio.json
+settings.json
+*.log
+.DS_Store

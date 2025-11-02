@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Holdings</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/header.js"></script>
+    <style id="header-css"></style>
+    <style>
+        .add-stock-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+        }
+        .add-stock-section h2 {
+            margin: 0 0 20px 0;
+            color: #1d1d1f;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .add-stock-section h2 svg {
+            width: 20px;
+            height: 20px;
+            color: #0071e3;
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+        
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-field label {
+            color: #86868b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .ticker-input-wrapper {
+            position: relative;
+        }
+        
+        input[type="text"], input[type="number"], select {
+            padding: 12px 16px;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #1d1d1f;
+            width: 100%;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0071e3;
+        }
+        
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            margin-top: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #1d1d1f;
+            border-bottom: 1px solid #f5f5f7;
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover {
+            background: #f5f5f7;
+        }
+        .autocomplete-item .ticker-symbol {
+            font-weight: 600;
+            color: #0071e3;
+            font-size: 15px;
+        }
+        .autocomplete-item .company-name {
+            color: #86868b;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+        .autocomplete-item .exchange {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #f5f5f7;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #86868b;
+            margin-left: 8px;
+        }
+        .loading-indicator {
+            padding: 12px 16px;
+            text-align: center;
+            color: #86868b;
+            font-size: 13px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #fafafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #f5f5f7;
+            color: #1d1d1f;
+            font-size: 14px;
+        }
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f7;
+            color: #1d1d1f;
+        }
+        tbody tr:hover {
+            background: #fafafc;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .ticker-col {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .remove-btn {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .remove-btn:hover {
+            background: #ff453a;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            color: #d2d2d7;
+        }
+        .market-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .market-badge.asx {
+            background: #e8f5e9;
+            color: #34c759;
+        }
+        .market-badge.intl {
+            background: #e3f2fd;
+            color: #0071e3;
+        }
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+
+    <div class="page-container">
+        <h1>Manage Holdings</h1>
+        <p class="subtitle">Add and manage your stock portfolio</p>
+
+        <div class="add-stock-section">
+            <h2>
+                <i data-lucide="plus-circle"></i>
+                Add New Stock
+            </h2>
+            <div class="input-group">
+                <div class="form-field">
+                    <label>Ticker Symbol</label>
+                    <div class="ticker-input-wrapper">
+                        <input type="text" id="ticker-input" placeholder="Start typing a company name or ticker..." autocomplete="off">
+                        <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Sector</label>
+                    <select id="sector-input">
+                        <option value="Technology">Technology</option>
+                        <option value="Financial">Financial</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Consumer">Consumer</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="Energy">Energy</option>
+                        <option value="Materials">Materials</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Communication">Communication</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Market</label>
+                    <select id="market-input">
+                        <option value="ASX">ASX</option>
+                        <option value="International">International</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Shares</label>
+                    <input type="number" id="shares-input" placeholder="0" min="0" step="1">
+                </div>
+                <button onclick="addStock()" class="btn btn-primary">
+                    <i data-lucide="plus"></i>
+                    Add Stock
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticker</th>
+                        <th>Market</th>
+                        <th>Sector</th>
+                        <th>Shares Owned</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="holdings-body">
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No stocks added yet. Add your first stock above!</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('header-css').textContent = headerCSS;
+        document.getElementById('header').innerHTML = renderHeader('holdings');
+
+        let portfolio = JSON.parse(localStorage.getItem('portfolio') || '[]');
+        let holdings = JSON.parse(localStorage.getItem('holdings') || '{}');
+        let searchTimeout = null;
+
+        window.onload = () => {
+            lucide.createIcons();
+            renderTable();
+            setupAutocomplete();
+        };
+
+        function setupAutocomplete() {
+            const input = document.getElementById('ticker-input');
+            const dropdown = document.getElementById('autocomplete-dropdown');
+
+            input.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                if (value.length < 2) {
+                    dropdown.classList.remove('show');
+                    return;
+                }
+
+                // Show loading
+                dropdown.innerHTML = '<div class="loading-indicator">Searching...</div>';
+                dropdown.classList.add('show');
+
+                // Debounce search
+                searchTimeout = setTimeout(() => {
+                    searchTickers(value);
+                }, 300);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+
+        async function searchTickers(query) {
+    const dropdown = document.getElementById('autocomplete-dropdown');
+    
+    try {
+        // Use our server proxy instead of direct call
+        const response = await fetch(`/api/search-ticker?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (!data.quotes || data.quotes.length === 0) {
+            dropdown.innerHTML = '<div class="loading-indicator">No results found</div>';
+            return;
+        }
+
+        // Filter and format results
+        const results = data.quotes
+            .filter(quote => quote.symbol && quote.quoteType === 'EQUITY')
+            .slice(0, 8);
+
+        if (results.length === 0) {
+            dropdown.innerHTML = '<div class="loading-indicator">No stocks found</div>';
+            return;
+        }
+
+        dropdown.innerHTML = results.map(stock => {
+            const exchange = stock.exchange || '';
+            const isASX = exchange === 'ASX' || stock.symbol.endsWith('.AX');
+            const market = isASX ? 'ASX' : 'International';
+            
+            return `
+                <div class="autocomplete-item" onclick='selectStock(${JSON.stringify({
+                    ticker: stock.symbol,
+                    name: stock.shortname || stock.longname || stock.symbol,
+                    market: market,
+                    exchange: exchange
+                })})'>
+                    <div>
+                        <span class="ticker-symbol">${stock.symbol}</span>
+                        <span class="exchange">${exchange}</span>
+                    </div>
+                    <div class="company-name">${stock.shortname || stock.longname || ''}</div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        dropdown.innerHTML = '<div class="loading-indicator">Search failed. Please try again.</div>';
+    }
+}
+
+        function selectStock(stock) {
+            document.getElementById('ticker-input').value = stock.ticker;
+            document.getElementById('market-input').value = stock.market;
+            document.getElementById('autocomplete-dropdown').classList.remove('show');
+            document.getElementById('shares-input').focus();
+        }
+
+        function addStock() {
+            const ticker = document.getElementById('ticker-input').value.toUpperCase().trim();
+            const sector = document.getElementById('sector-input').value;
+            const market = document.getElementById('market-input').value;
+            const shares = parseInt(document.getElementById('shares-input').value) || 0;
+
+            if (!ticker) {
+                alert('Please enter a ticker symbol');
+                return;
+            }
+
+            if (portfolio.includes(ticker)) {
+                alert('Stock already in portfolio');
+                return;
+            }
+
+            // Add to portfolio array
+            portfolio.push(ticker);
+            localStorage.setItem('portfolio', JSON.stringify(portfolio));
+
+            // Add to holdings object
+            holdings[ticker] = {
+                quantity: shares,
+                sector: sector,
+                market: market
+            };
+            localStorage.setItem('holdings', JSON.stringify(holdings));
+
+            // Clear inputs
+            document.getElementById('ticker-input').value = '';
+            document.getElementById('shares-input').value = '';
+            document.getElementById('market-input').value = 'ASX';
+            document.getElementById('sector-input').value = 'Technology';
+
+            // Re-render table
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('holdings-body');
+            
+            if (portfolio.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No stocks added yet. Add your first stock above!</p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            tbody.innerHTML = '';
+            portfolio.forEach(ticker => {
+                const holding = holdings[ticker] || { quantity: 0, sector: 'Other', market: 'International' };
+                const marketClass = holding.market === 'ASX' ? 'asx' : 'intl';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="ticker-col">${ticker}</td>
+                    <td><span class="market-badge ${marketClass}">${holding.market}</span></td>
+                    <td>
+                        <select id="sector-${ticker}" onchange="updateHolding('${ticker}')">
+                            <option value="Technology" ${holding.sector === 'Technology' ? 'selected' : ''}>Technology</option>
+                            <option value="Financial" ${holding.sector === 'Financial' ? 'selected' : ''}>Financial</option>
+                            <option value="Healthcare" ${holding.sector === 'Healthcare' ? 'selected' : ''}>Healthcare</option>
+                            <option value="Consumer" ${holding.sector === 'Consumer' ? 'selected' : ''}>Consumer</option>
+                            <option value="Industrial" ${holding.sector === 'Industrial' ? 'selected' : ''}>Industrial</option>
+                            <option value="Energy" ${holding.sector === 'Energy' ? 'selected' : ''}>Energy</option>
+                            <option value="Materials" ${holding.sector === 'Materials' ? 'selected' : ''}>Materials</option>
+                            <option value="Utilities" ${holding.sector === 'Utilities' ? 'selected' : ''}>Utilities</option>
+                            <option value="Real Estate" ${holding.sector === 'Real Estate' ? 'selected' : ''}>Real Estate</option>
+                            <option value="Communication" ${holding.sector === 'Communication' ? 'selected' : ''}>Communication</option>
+                            <option value="Other" ${holding.sector === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" id="qty-${ticker}" value="${holding.quantity}" 
+                            min="0" step="1" onchange="updateHolding('${ticker}')" 
+                            style="width: 120px;">
+                    </td>
+                    <td>
+                        <button class="remove-btn" onclick="removeStock('${ticker}')">
+                            Remove
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        function updateHolding(ticker) {
+            const quantity = parseInt(document.getElementById(`qty-${ticker}`).value) || 0;
+            const sector = document.getElementById(`sector-${ticker}`).value;
+            
+            holdings[ticker] = {
+                ...holdings[ticker],
+                quantity: quantity,
+                sector: sector
+            };
+            
+            localStorage.setItem('holdings', JSON.stringify(holdings));
+        }
+
+        function removeStock(ticker) {
+            if (!confirm(`Remove ${ticker} from portfolio?`)) return;
+            
+            portfolio = portfolio.filter(t => t !== ticker);
+            delete holdings[ticker];
+            
+            localStorage.setItem('portfolio', JSON.stringify(portfolio));
+            localStorage.setItem('holdings', JSON.stringify(holdings));
+            
+            renderTable();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Portfolio Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/header.js"></script>
+    <style id="header-css"></style>
+    <style>
+        .summary-section {
+            margin-bottom: 30px;
+        }
+        
+        .main-value-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+            margin-bottom: 20px;
+        }
+        .main-value-card .card-label {
+            color: #86868b;
+            font-size: 16px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .main-value-card .card-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+        
+        .sub-cards { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+        }
+        .sub-card { 
+            background: white; 
+            padding: 24px; 
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+        }
+        .sub-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .sub-card-label { 
+            color: #86868b; 
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .market-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .market-badge.asx {
+            background: #e8f5e9;
+            color: #34c759;
+        }
+        .market-badge.intl {
+            background: #e3f2fd;
+            color: #0071e3;
+        }
+        .sub-card-value { 
+            font-size: 32px; 
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+        .sub-card-changes {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .change-item {
+            flex: 1;
+            min-width: 120px;
+        }
+        .change-label {
+            color: #86868b;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .change-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .positive { color: #34c759; }
+        .negative { color: #ff3b30; }
+        
+        .controls-wrapper {
+            margin-bottom: 30px;
+        }
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .controls-row:first-child {
+            margin-bottom: 15px;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            background: white;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+        }
+        .filter-tab {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #86868b;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-tab svg {
+            width: 16px;
+            height: 16px;
+        }
+        .filter-tab:hover {
+            background: #fafafc;
+            color: #1d1d1f;
+        }
+        .filter-tab.active {
+            background: #0071e3;
+            color: white;
+        }
+        
+        .timeframe-selector {
+            display: flex;
+            gap: 8px;
+            background: white;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+            margin-left: auto;
+        }
+        .timeframe-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #86868b;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .timeframe-btn:hover {
+            background: #fafafc;
+            color: #1d1d1f;
+        }
+        .timeframe-btn.active {
+            background: #0071e3;
+            color: white;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .last-updated {
+            color: #86868b;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .last-updated svg {
+            width: 16px;
+            height: 16px;
+        }
+        .main-value-card .sub-card-changes {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.main-value-card .card-value {
+    margin-bottom: 16px;  /* Add spacing before changes */
+}
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 40px 0 20px 0;
+        }
+        .section-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin: 0;
+        }
+        .section-header .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .section-header .badge.asx {
+            background: #e8f5e9;
+            color: #34c759;
+        }
+        .section-header .badge.intl {
+            background: #e3f2fd;
+            color: #0071e3;
+        }
+        .section-header .badge.winners {
+            background: #e8f5e9;
+            color: #34c759;
+        }
+        .section-header .badge.losers {
+            background: #ffebee;
+            color: #ff3b30;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+            margin-bottom: 30px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+        }
+        th { 
+            background: #fafafc; 
+            padding: 16px; 
+            text-align: left; 
+            font-weight: 600; 
+            border-bottom: 1px solid #f5f5f7; 
+            cursor: pointer; 
+            user-select: none;
+            color: #1d1d1f;
+            font-size: 14px;
+        }
+        th:hover { 
+            background: #f5f5f7; 
+        }
+        th.section-divider {
+            border-left: 3px solid #d2d2d7;
+            padding-left: 24px;
+        }
+        td { 
+            padding: 16px; 
+            border-bottom: 1px solid #f5f5f7;
+            color: #1d1d1f;
+        }
+        td.section-divider {
+            border-left: 3px solid #e5e5e7;
+            padding-left: 24px;
+        }
+        tbody tr:hover {
+            background: #fafafc;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .ticker-col { 
+            font-weight: 600; 
+            font-size: 16px; 
+        }
+        .chart-cell {
+            width: 220px;
+            height: 70px;
+            padding: 12px 16px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            color: #d2d2d7;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+
+    <div class="page-container">
+        <h1>Portfolio Dashboard</h1>
+        <p class="subtitle">Real-time overview of your portfolio performance</p>
+
+        <!-- Summary Section -->
+       
+        <div class="summary-section">
+            <div class="main-value-card">
+                <div class="card-label">Total Portfolio Value</div>
+                <div class="card-value" id="total-value">$0.00 AUD</div>
+                <div class="sub-card-changes">
+                    <div class="change-item">
+                        <div class="change-label">Today</div>
+                        <div class="change-value" id="total-today-change">+$0.00 (0.00%)</div>
+                    </div>
+                    <div class="change-item">
+                        <div class="change-label">Period</div>
+                        <div class="change-value" id="total-period-change">+$0.00 (0.00%)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sub-cards">
+                <div class="sub-card">
+                    <div class="sub-card-header">
+                        <div class="sub-card-label">Australian Holdings</div>
+                        <span class="market-badge asx">ASX</span>
+                    </div>
+                    <div class="sub-card-value" id="asx-value">$0.00</div>
+                    <div class="sub-card-changes">
+                        <div class="change-item">
+                            <div class="change-label">Today</div>
+                            <div class="change-value" id="asx-today-change">+$0.00 (0.00%)</div>
+                        </div>
+                        <div class="change-item">
+                            <div class="change-label">Period</div>
+                            <div class="change-value" id="asx-period-change">+$0.00 (0.00%)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sub-card">
+                    <div class="sub-card-header">
+                        <div class="sub-card-label">International Holdings</div>
+                        <span class="market-badge intl">Global</span>
+                    </div>
+                    <div class="sub-card-value" id="intl-value">$0.00</div>
+                    <div class="sub-card-changes">
+                        <div class="change-item">
+                            <div class="change-label">Today</div>
+                            <div class="change-value" id="intl-today-change">+$0.00 (0.00%)</div>
+                        </div>
+                        <div class="change-item">
+                            <div class="change-label">Period</div>
+                            <div class="change-value" id="intl-period-change">+$0.00 (0.00%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-wrapper">
+            <div class="controls-row">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="setFilter('all')">
+                        <i data-lucide="list"></i>
+                        All Stocks
+                    </button>
+                    <button class="filter-tab" onclick="setFilter('asx')">
+                        <i data-lucide="map-pin"></i>
+                        ASX Only
+                    </button>
+                    <button class="filter-tab" onclick="setFilter('intl')">
+                        <i data-lucide="globe"></i>
+                        International
+                    </button>
+                    <button class="filter-tab" onclick="setFilter('winners')">
+                        <i data-lucide="trending-up"></i>
+                        Period Winners
+                    </button>
+                    <button class="filter-tab" onclick="setFilter('losers')">
+                        <i data-lucide="trending-down"></i>
+                        Period Losers
+                    </button>
+                </div>
+                
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn active" data-days="30" onclick="changeTimeframe(30)">1M</button>
+                    <button class="timeframe-btn" data-days="90" onclick="changeTimeframe(90)">3M</button>
+                    <button class="timeframe-btn" data-days="180" onclick="changeTimeframe(180)">6M</button>
+                    <button class="timeframe-btn" data-days="365" onclick="changeTimeframe(365)">1Y</button>
+                </div>
+            </div>
+            
+            <div class="controls-row">
+                <button onclick="refreshAll()" class="btn btn-primary">
+                    <i data-lucide="refresh-cw"></i>
+                    Refresh All Data
+                </button>
+                
+                <div class="last-updated">
+                    <i data-lucide="clock"></i>
+                    <span id="last-updated-time">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ASX Holdings -->
+        <div id="asx-section" class="section-wrapper">
+            <div class="section-header">
+                <h2>Australian Shares</h2>
+                <span class="badge asx">ASX</span>
+            </div>
+            <div class="table-container">
+                <table id="asx-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('asx', 'ticker')">Ticker</th>
+                            <th class="section-divider" onclick="sortTable('asx', 'price')">Price (AUD)</th>
+                            <th class="section-divider" onclick="sortTable('asx', 'change')">Today's Change (AUD)</th>
+                            <th onclick="sortTable('asx', 'changePercent')">Today's %</th>
+                            <th class="section-divider" onclick="sortTable('asx', 'periodChange')">Period Change (AUD)</th>
+                            <th onclick="sortTable('asx', 'periodChangePercent')">Period %</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asx-body">
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i data-lucide="loader-2" style="animation: spin 1s linear infinite;"></i>
+                                <p>Loading ASX holdings...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- International Holdings -->
+        <div id="intl-section" class="section-wrapper">
+            <div class="section-header">
+                <h2>International Shares</h2>
+                <span class="badge intl">Global</span>
+            </div>
+            <div class="table-container">
+                <table id="intl-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('intl', 'ticker')">Ticker</th>
+                            <th class="section-divider" onclick="sortTable('intl', 'price')">Price (AUD)</th>
+                            <th class="section-divider" onclick="sortTable('intl', 'change')">Today's Change (AUD)</th>
+                            <th onclick="sortTable('intl', 'changePercent')">Today's %</th>
+                            <th class="section-divider" onclick="sortTable('intl', 'periodChange')">Period Change (AUD)</th>
+                            <th onclick="sortTable('intl', 'periodChangePercent')">Period %</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="intl-body">
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i data-lucide="loader-2" style="animation: spin 1s linear infinite;"></i>
+                                <p>Loading international holdings...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Winners Section -->
+        <div id="winners-section" class="section-wrapper hidden">
+            <div class="section-header">
+                <h2>Period Winners</h2>
+                <span class="badge winners">Top Performers</span>
+            </div>
+            <div class="table-container">
+                <table id="winners-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('winners', 'ticker')">Ticker</th>
+                            <th class="section-divider" onclick="sortTable('winners', 'price')">Price (AUD)</th>
+                            <th class="section-divider" onclick="sortTable('winners', 'change')">Today's Change (AUD)</th>
+                            <th onclick="sortTable('winners', 'changePercent')">Today's %</th>
+                            <th class="section-divider" onclick="sortTable('winners', 'periodChange')">Period Change (AUD)</th>
+                            <th onclick="sortTable('winners', 'periodChangePercent')">Period %</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="winners-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Losers Section -->
+        <div id="losers-section" class="section-wrapper hidden">
+            <div class="section-header">
+                <h2>Period Losers</h2>
+                <span class="badge losers">Underperformers</span>
+            </div>
+            <div class="table-container">
+                <table id="losers-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('losers', 'ticker')">Ticker</th>
+                            <th class="section-divider" onclick="sortTable('losers', 'price')">Price (AUD)</th>
+                            <th class="section-divider" onclick="sortTable('losers', 'change')">Today's Change (AUD)</th>
+                            <th onclick="sortTable('losers', 'changePercent')">Today's %</th>
+                            <th class="section-divider" onclick="sortTable('losers', 'periodChange')">Period Change (AUD)</th>
+                            <th onclick="sortTable('losers', 'periodChangePercent')">Period %</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody id="losers-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inject header CSS and HTML
+        document.getElementById('header-css').textContent = headerCSS;
+        document.getElementById('header').innerHTML = renderHeader('dashboard');
+
+        // Helper function to format currency with commas
+        function formatCurrency(value) {
+            return value.toLocaleString('en-AU', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+
+        let portfolio = JSON.parse(localStorage.getItem('portfolio') || '[]');
+        let holdings = JSON.parse(localStorage.getItem('holdings') || '{}');
+        let asxData = [];
+        let intlData = [];
+        let allData = [];
+        let sortDirection = { asx: {}, intl: {}, winners: {}, losers: {} };
+        let currentTimeframe = 30;
+        let currentFilter = 'all';
+        let exchangeRates = {};
+
+        window.onload = async () => {
+            lucide.createIcons();
+            updateLastUpdatedTime();
+            
+            if (portfolio.length === 0) {
+                document.getElementById('asx-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No ASX stocks in portfolio. <a href="/holdings.html">Add stocks</a></p>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('intl-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No international stocks in portfolio. <a href="/holdings.html">Add stocks</a></p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            // Fetch exchange rates first
+            await loadExchangeRates();
+            await loadPortfolio();
+        };
+
+        async function loadExchangeRates() {
+            try {
+                // Get USD to AUD rate
+                const usdResponse = await fetch('/api/exchange-rate/USD/AUD');
+                const usdData = await usdResponse.json();
+                exchangeRates.USD = usdData.rate;
+
+                // Add other currencies as needed
+                exchangeRates.AUD = 1; // AUD to AUD is 1:1
+                
+                console.log('Exchange rates loaded:', exchangeRates);
+            } catch (error) {
+                console.error('Error loading exchange rates:', error);
+                exchangeRates.USD = 1.5; // Fallback rate
+                exchangeRates.AUD = 1;
+            }
+        }
+
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleString('en-AU', { 
+                timeZone: 'Australia/Brisbane',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('last-updated-time').textContent = `Last updated: ${timeStr}`;
+        }
+
+        function changeTimeframe(days) {
+            currentTimeframe = days;
+            
+            // Update active button
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.days) === days) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Reload with new timeframe
+            loadPortfolio();
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.closest('.filter-tab').classList.add('active');
+            
+            // Show/hide sections
+            document.getElementById('asx-section').classList.toggle('hidden', filter !== 'all' && filter !== 'asx');
+            document.getElementById('intl-section').classList.toggle('hidden', filter !== 'all' && filter !== 'intl');
+            document.getElementById('winners-section').classList.toggle('hidden', filter !== 'winners');
+            document.getElementById('losers-section').classList.toggle('hidden', filter !== 'losers');
+            
+            // Render appropriate tables
+            if (filter === 'winners' || filter === 'losers') {
+                renderFilteredTable(filter);
+            }
+            
+            lucide.createIcons();
+        }
+
+        async function loadPortfolio() {
+            asxData = [];
+            intlData = [];
+            allData = [];
+            
+            for (const ticker of portfolio) {
+                try {
+                    const holding = holdings[ticker] || { market: 'International', quantity: 0 };
+                    
+                    // Fetch current price
+                    const response = await fetch(`/api/stock/${ticker}`);
+                    const data = await response.json();
+                    
+                    // Fetch historical data
+                    const historyResponse = await fetch(`/api/history/${ticker}?days=${currentTimeframe}`);
+                    const history = await historyResponse.json();
+                    
+                    // Determine if conversion needed
+                    let rate = 1; // Default to 1 (no conversion)
+                    const isASX = holding.market === 'ASX' || ticker.endsWith('.AX');
+                    
+                    if (!isASX) {
+                        // Only convert non-ASX stocks
+                        const stockCurrency = data.price.currency || 'USD';
+                        rate = exchangeRates[stockCurrency] || exchangeRates.USD || 1.5;
+                    }
+                    
+                    // Convert to AUD (or keep as-is for ASX)
+                    const priceAUD = data.price.price * rate;
+                    const changeAUD = data.price.change * rate;
+                    
+                    // Calculate period change
+                    let periodChange = 0;
+                    let periodChangePercent = 0;
+                    if (history && history.length > 1) {
+                        const startPrice = history[0].close;
+                        const endPrice = history[history.length - 1].close;
+                        periodChange = (endPrice - startPrice) * rate;
+                        periodChangePercent = ((endPrice - startPrice) / startPrice) * 100;
+                    }
+                    
+                    const stockData = {
+                        ticker: ticker,
+                        price: priceAUD,
+                        change: changeAUD,
+                        changePercent: data.price.changePercent,
+                        history: history,
+                        periodChange: periodChange,
+                        periodChangePercent: periodChangePercent,
+                        rate: rate,
+                        market: isASX ? 'ASX' : 'International'
+                    };
+                    
+                    allData.push(stockData);
+                    
+                    // Split by market
+                    if (isASX) {
+                        asxData.push(stockData);
+                    } else {
+                        intlData.push(stockData);
+                    }
+                } catch (error) {
+                    console.error(`Error loading ${ticker}:`, error);
+                }
+            }
+            
+            updateSummaryCards();
+            renderTable('asx');
+            renderTable('intl');
+            updateLastUpdatedTime();
+        }
+
+        function updateSummaryCards() {
+            let totalValue = 0;
+            let asxValue = 0;
+            let intlValue = 0;
+            let asxTodayChange = 0;
+            let intlTodayChange = 0;
+            let asxPeriodChange = 0;
+            let intlPeriodChange = 0;
+            
+            asxData.forEach(stock => {
+                const holding = holdings[stock.ticker] || { quantity: 0 };
+                const value = stock.price * holding.quantity;
+                const todayChange = stock.change * holding.quantity;
+                const periodChange = stock.periodChange * holding.quantity;
+                
+                asxValue += value;
+                totalValue += value;
+                asxTodayChange += todayChange;
+                asxPeriodChange += periodChange;
+            });
+            
+            intlData.forEach(stock => {
+                const holding = holdings[stock.ticker] || { quantity: 0 };
+                const value = stock.price * holding.quantity;
+                const todayChange = stock.change * holding.quantity;
+                const periodChange = stock.periodChange * holding.quantity;
+                
+                intlValue += value;
+                totalValue += value;
+                intlTodayChange += todayChange;
+                intlPeriodChange += periodChange;
+            });
+            
+            // Calculate percentages
+            const asxTodayPercent = asxValue > 0 ? (asxTodayChange / asxValue) * 100 : 0;
+            const intlTodayPercent = intlValue > 0 ? (intlTodayChange / intlValue) * 100 : 0;
+            const asxPeriodPercent = asxValue > 0 ? (asxPeriodChange / (asxValue - asxPeriodChange)) * 100 : 0;
+            const intlPeriodPercent = intlValue > 0 ? (intlPeriodChange / (intlValue - intlPeriodChange)) * 100 : 0;
+            
+            // Update main value
+            document.getElementById('total-value').textContent = '$' + formatCurrency(totalValue) + ' AUD';
+            
+            // Update ASX card
+            document.getElementById('asx-value').textContent = '$' + formatCurrency(asxValue);
+            const asxTodayEl = document.getElementById('asx-today-change');
+            const asxTodaySign = asxTodayChange >= 0 ? '+' : '';
+            asxTodayEl.textContent = `${asxTodaySign}$${formatCurrency(Math.abs(asxTodayChange))} (${asxTodaySign}${asxTodayPercent.toFixed(2)}%)`;
+            asxTodayEl.className = 'change-value ' + (asxTodayChange >= 0 ? 'positive' : 'negative');
+            
+            const asxPeriodEl = document.getElementById('asx-period-change');
+            const asxPeriodSign = asxPeriodChange >= 0 ? '+' : '';
+            asxPeriodEl.textContent = `${asxPeriodSign}$${formatCurrency(Math.abs(asxPeriodChange))} (${asxPeriodSign}${asxPeriodPercent.toFixed(2)}%)`;
+            asxPeriodEl.className = 'change-value ' + (asxPeriodChange >= 0 ? 'positive' : 'negative');
+            
+            // Update International card
+            document.getElementById('intl-value').textContent = '$' + formatCurrency(intlValue);
+            const intlTodayEl = document.getElementById('intl-today-change');
+            const intlTodaySign = intlTodayChange >= 0 ? '+' : '';
+            intlTodayEl.textContent = `${intlTodaySign}$${formatCurrency(Math.abs(intlTodayChange))} (${intlTodaySign}${intlTodayPercent.toFixed(2)}%)`;
+            intlTodayEl.className = 'change-value ' + (intlTodayChange >= 0 ? 'positive' : 'negative');
+            
+            const intlPeriodEl = document.getElementById('intl-period-change');
+            const intlPeriodSign = intlPeriodChange >= 0 ? '+' : '';
+            intlPeriodEl.textContent = `${intlPeriodSign}$${formatCurrency(Math.abs(intlPeriodChange))} (${intlPeriodSign}${intlPeriodPercent.toFixed(2)}%)`;
+            intlPeriodEl.className = 'change-value ' + (intlPeriodChange >= 0 ? 'positive' : 'negative');
+
+            // Calculate total changes
+const totalTodayChange = asxTodayChange + intlTodayChange;
+const totalPeriodChange = asxPeriodChange + intlPeriodChange;
+
+// Calculate percentages
+const totalTodayPercent = totalValue > 0 ? (totalTodayChange / totalValue) * 100 : 0;
+const totalPeriodPercent = totalValue > 0 ? (totalPeriodChange / (totalValue - totalPeriodChange)) * 100 : 0;
+
+// Update total today change
+const totalTodayEl = document.getElementById('total-today-change');
+const totalTodaySign = totalTodayChange >= 0 ? '+' : '';
+totalTodayEl.textContent = `${totalTodaySign}$${formatCurrency(Math.abs(totalTodayChange))} (${totalTodaySign}${totalTodayPercent.toFixed(2)}%)`;
+totalTodayEl.className = 'change-value ' + (totalTodayChange >= 0 ? 'positive' : 'negative');
+
+// Update total period change
+const totalPeriodEl = document.getElementById('total-period-change');
+const totalPeriodSign = totalPeriodChange >= 0 ? '+' : '';
+totalPeriodEl.textContent = `${totalPeriodSign}$${formatCurrency(Math.abs(totalPeriodChange))} (${totalPeriodSign}${totalPeriodPercent.toFixed(2)}%)`;
+totalPeriodEl.className = 'change-value ' + (totalPeriodChange >= 0 ? 'positive' : 'negative');
+        }
+
+        function renderFilteredTable(filter) {
+            const data = allData.filter(stock => {
+                if (filter === 'winners') return stock.periodChangePercent > 0;
+                if (filter === 'losers') return stock.periodChangePercent < 0;
+                return true;
+            }).sort((a, b) => {
+                if (filter === 'winners') return b.periodChangePercent - a.periodChangePercent;
+                if (filter === 'losers') return a.periodChangePercent - b.periodChangePercent;
+                return 0;
+            });
+            
+            const tbody = document.getElementById(`${filter}-body`);
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No ${filter} for this period.</p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            
+            data.forEach(stock => {
+                const todayChangeClass = stock.change >= 0 ? 'positive' : 'negative';
+                const todayChangeSign = stock.change >= 0 ? '+' : '';
+                
+                const periodChangeClass = stock.periodChange >= 0 ? 'positive' : 'negative';
+                const periodChangeSign = stock.periodChange >= 0 ? '+' : '';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="ticker-col">${stock.ticker}</td>
+                    <td class="section-divider">$${formatCurrency(stock.price)}</td>
+                    <td class="section-divider ${todayChangeClass}">${todayChangeSign}$${formatCurrency(Math.abs(stock.change))}</td>
+                    <td class="${todayChangeClass}">${todayChangeSign}${stock.changePercent.toFixed(2)}%</td>
+                    <td class="section-divider ${periodChangeClass}">${periodChangeSign}$${formatCurrency(Math.abs(stock.periodChange))}</td>
+                    <td class="${periodChangeClass}">${periodChangeSign}${Math.abs(stock.periodChangePercent).toFixed(2)}%</td>
+                    <td class="chart-cell"><canvas id="chart-${filter}-${stock.ticker}"></canvas></td>
+                `;
+                tbody.appendChild(row);
+                
+                // Draw chart
+                if (stock.history && stock.history.length > 0) {
+                    drawChart(`chart-${filter}-${stock.ticker}`, stock.history, stock.periodChangePercent, stock.rate);
+                }
+            });
+        }
+
+        function renderTable(market) {
+            const data = market === 'asx' ? asxData : intlData;
+            const tbody = document.getElementById(`${market}-body`);
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No ${market === 'asx' ? 'ASX' : 'international'} stocks in portfolio.</p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            data.forEach(stock => {
+                const todayChangeClass = stock.change >= 0 ? 'positive' : 'negative';
+                const todayChangeSign = stock.change >= 0 ? '+' : '';
+                
+                const periodChangeClass = stock.periodChange >= 0 ? 'positive' : 'negative';
+                const periodChangeSign = stock.periodChange >= 0 ? '+' : '';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="ticker-col">${stock.ticker}</td>
+                    <td class="section-divider">$${formatCurrency(stock.price)}</td>
+                    <td class="section-divider ${todayChangeClass}">${todayChangeSign}$${formatCurrency(Math.abs(stock.change))}</td>
+                    <td class="${todayChangeClass}">${todayChangeSign}${stock.changePercent.toFixed(2)}%</td>
+                    <td class="section-divider ${periodChangeClass}">${periodChangeSign}$${formatCurrency(Math.abs(stock.periodChange))}</td>
+                    <td class="${periodChangeClass}">${periodChangeSign}${Math.abs(stock.periodChangePercent).toFixed(2)}%</td>
+                    <td class="chart-cell"><canvas id="chart-${market}-${stock.ticker}"></canvas></td>
+                `;
+                tbody.appendChild(row);
+                
+                // Draw chart with real data
+                if (stock.history && stock.history.length > 0) {
+                    drawChart(`chart-${market}-${stock.ticker}`, stock.history, stock.periodChangePercent, stock.rate);
+                }
+            });
+        }
+
+        function drawChart(canvasId, history, changePercent, rate) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const prices = history.map(d => d.close * rate); // Convert to AUD
+            
+            // Get min and max for subtle Y-axis range
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            
+            // Create date labels for X-axis
+            const dateLabels = history.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' });
+            });
+            
+            const color = changePercent >= 0 ? '#34c759' : '#ff3b30';
+            const bgColor = changePercent >= 0 ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 59, 48, 0.1)';
+            
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        data: prices,
+                        borderColor: color,
+                        backgroundColor: bgColor,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + formatCurrency(context.parsed.y) + ' AUD';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            display: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#86868b',
+                                font: {
+                                    size: 9
+                                },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 4
+                            }
+                        },
+                        y: { 
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                color: '#f5f5f7',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#86868b',
+                                font: {
+                                    size: 9
+                                },
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                },
+                                maxTicksLimit: 4
+                            },
+                            min: minPrice * 0.99,
+                            max: maxPrice * 1.01
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function sortTable(market, column) {
+            sortDirection[market][column] = !sortDirection[market][column];
+            
+            let data;
+            if (market === 'asx') data = asxData;
+            else if (market === 'intl') data = intlData;
+            else if (market === 'winners') {
+                data = allData.filter(s => s.periodChangePercent > 0);
+            } else if (market === 'losers') {
+                data = allData.filter(s => s.periodChangePercent < 0);
+            }
+            
+            data.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+                
+                if (column === 'ticker') {
+                    return sortDirection[market][column] ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                }
+                
+                return sortDirection[market][column] ? aVal - bVal : bVal - aVal;
+            });
+            
+            if (market === 'asx' || market === 'intl') {
+                renderTable(market);
+            } else {
+                renderFilteredTable(market);
+            }
+        }
+
+        async function refreshAll() {
+            if (!confirm('Refresh all stocks? This will use API credits.')) return;
+            
+            await fetch('/api/update-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tickers: portfolio })
+            });
+            
+            location.reload();
+        }
+        
+        // Add CSS for loading spinner animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

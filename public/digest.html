@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Digest</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/header.js"></script>
+    <style id="header-css"></style>
+    <style>
+        .digest-header { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+        }
+        .digest-header h1 { 
+            margin: 0 0 10px 0;
+            color: #1d1d1f;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .digest-date { 
+            color: #86868b; 
+            font-size: 15px; 
+        }
+        .cache-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f5f5f7;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #86868b;
+            margin-left: 12px;
+        }
+        .cache-indicator svg {
+            width: 14px;
+            height: 14px;
+        }
+        .cache-indicator.fresh {
+            background: #e8f5e9;
+            color: #34c759;
+        }
+        .section { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f5f5f7;
+        }
+        .section h2 { 
+            margin-top: 0; 
+            color: #1d1d1f; 
+            border-bottom: 2px solid #0071e3; 
+            padding-bottom: 12px;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h2 svg {
+            width: 20px;
+            height: 20px;
+            color: #0071e3;
+        }
+        .executive-summary { 
+            background: #f5f5f7; 
+            padding: 20px; 
+            border-radius: 12px; 
+            border-left: 4px solid #0071e3; 
+            font-size: 16px; 
+            line-height: 1.6;
+            color: #1d1d1f;
+        }
+        .movers { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+        .mover-card { 
+            padding: 20px; 
+            border-radius: 12px; 
+        }
+        .gainer-card { 
+            background: #e8f5e9; 
+            border-left: 4px solid #34c759; 
+        }
+        .loser-card { 
+            background: #ffebee; 
+            border-left: 4px solid #ff3b30; 
+        }
+        .mover-ticker { 
+            font-weight: 700; 
+            font-size: 20px; 
+            margin-bottom: 8px;
+            color: #1d1d1f;
+        }
+        .mover-change { 
+            font-size: 28px; 
+            font-weight: 700; 
+        }
+        .positive { color: #34c759; }
+        .negative { color: #ff3b30; }
+        .news-item { 
+            padding: 16px; 
+            background: #fafafc; 
+            border-radius: 12px; 
+            margin-bottom: 12px; 
+            transition: background 0.2s;
+        }
+        .news-item:hover {
+            background: #f5f5f7;
+        }
+        .news-ticker { 
+            font-weight: 600; 
+            color: #0071e3; 
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .news-content {
+            color: #1d1d1f;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .action-item { 
+            padding: 16px; 
+            background: #fff3e0; 
+            border-left: 4px solid #ff9800; 
+            border-radius: 8px; 
+            margin-bottom: 12px;
+            color: #1d1d1f;
+            font-size: 15px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .loading { 
+            text-align: center; 
+            padding: 60px 20px; 
+            color: #86868b;
+        }
+        .loading svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            color: #d2d2d7;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            color: #d2d2d7;
+        }
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+
+    <div class="page-container">
+        <div class="digest-header">
+            <h1>
+                Daily Portfolio Digest
+                <span id="cache-indicator" class="cache-indicator"></span>
+            </h1>
+            <div class="digest-date" id="digest-date">Loading...</div>
+        </div>
+
+        <div class="controls">
+            <button onclick="generateDigest(true)" class="btn btn-primary">
+                <i data-lucide="refresh-cw"></i>
+                Generate Fresh Digest
+            </button>
+            <span style="color: #86868b; font-size: 14px;" id="last-generated"></span>
+        </div>
+
+        <div id="digest-content">
+            <div class="loading">
+                <i data-lucide="loader-2"></i>
+                <p>Loading digest...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inject header CSS and HTML
+        document.getElementById('header-css').textContent = headerCSS;
+        document.getElementById('header').innerHTML = renderHeader('digest');
+
+        let portfolio = JSON.parse(localStorage.getItem('portfolio') || '[]');
+
+        window.onload = () => {
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            const now = new Date();
+            document.getElementById('digest-date').textContent = now.toLocaleDateString('en-AU', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'Australia/Brisbane'
+            });
+
+            if (portfolio.length === 0) {
+                document.getElementById('digest-content').innerHTML = `
+                    <div class="section">
+                        <div class="empty-state">
+                            <i data-lucide="inbox"></i>
+                            <p>No stocks in portfolio. <a href="/news.html">Add stocks</a> to generate a digest.</p>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            // Load cached digest or generate new one
+            loadDigest();
+        };
+
+        async function loadDigest() {
+            const cachedDigest = localStorage.getItem('cachedDigest');
+            const today = new Date().toDateString();
+            
+            if (cachedDigest) {
+                const parsed = JSON.parse(cachedDigest);
+                
+                // Check if cache is from today
+                if (parsed.date === today) {
+                    console.log('Using cached digest from today');
+                    renderDigest(parsed.digest, parsed.timestamp);
+                    updateCacheIndicator(false, parsed.timestamp);
+                    return;
+                }
+            }
+            
+            // No valid cache, generate fresh
+            console.log('No valid cache, generating fresh digest');
+            await generateDigest(false);
+        }
+
+        async function generateDigest(forceFresh) {
+            if (forceFresh && !confirm('Generate a fresh digest? This will use API credits.')) {
+                return;
+            }
+
+            document.getElementById('digest-content').innerHTML = `
+                <div class="loading">
+                    <i data-lucide="loader-2"></i>
+                    <p>Generating your daily digest...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            try {
+                const response = await fetch('/api/digest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tickers: portfolio })
+                });
+
+                const digest = await response.json();
+                const timestamp = new Date().toISOString();
+                
+                // Cache the digest
+                localStorage.setItem('cachedDigest', JSON.stringify({
+                    date: new Date().toDateString(),
+                    timestamp: timestamp,
+                    digest: digest
+                }));
+                
+                renderDigest(digest, timestamp);
+                updateCacheIndicator(true, timestamp);
+            } catch (error) {
+                document.getElementById('digest-content').innerHTML = `
+                    <div class="section">
+                        <div class="empty-state">
+                            <i data-lucide="alert-circle"></i>
+                            <p>Error generating digest. Please try again.</p>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function updateCacheIndicator(isFresh, timestamp) {
+            const indicator = document.getElementById('cache-indicator');
+            const lastGenerated = document.getElementById('last-generated');
+            const time = new Date(timestamp);
+            const timeStr = time.toLocaleTimeString('en-AU', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                timeZone: 'Australia/Brisbane'
+            });
+            
+            if (isFresh) {
+                indicator.className = 'cache-indicator fresh';
+                indicator.innerHTML = '<i data-lucide="check-circle"></i> Fresh';
+                lastGenerated.textContent = `Generated at ${timeStr}`;
+            } else {
+                indicator.className = 'cache-indicator';
+                indicator.innerHTML = '<i data-lucide="database"></i> Cached';
+                lastGenerated.textContent = `Last generated at ${timeStr}`;
+            }
+            
+            lucide.createIcons();
+        }
+
+        function renderDigest(digest, timestamp) {
+            let html = '';
+
+            // Executive Summary
+            html += `
+                <div class="section">
+                    <h2>
+                        <i data-lucide="file-text"></i>
+                        Executive Summary
+                    </h2>
+                    <div class="executive-summary">${digest.executiveSummary}</div>
+                </div>
+            `;
+
+            // Top Movers
+            html += `
+                <div class="section">
+                    <h2>
+                        <i data-lucide="trending-up"></i>
+                        Top Movers
+                    </h2>
+                    <div class="movers">
+            `;
+
+            if (digest.topGainer) {
+                html += `
+                    <div class="mover-card gainer-card">
+                        <div style="color: #86868b; font-size: 13px; margin-bottom: 8px; font-weight: 600;">BIGGEST GAINER</div>
+                        <div class="mover-ticker">${digest.topGainer.ticker}</div>
+                        <div class="mover-change positive">+${digest.topGainer.changePercent.toFixed(2)}%</div>
+                        <div style="color: #86868b; font-size: 15px; margin-top: 8px;">$${digest.topGainer.price.toFixed(2)}</div>
+                    </div>
+                `;
+            }
+
+            if (digest.topLoser) {
+                html += `
+                    <div class="mover-card loser-card">
+                        <div style="color: #86868b; font-size: 13px; margin-bottom: 8px; font-weight: 600;">BIGGEST LOSER</div>
+                        <div class="mover-ticker">${digest.topLoser.ticker}</div>
+                        <div class="mover-change negative">${digest.topLoser.changePercent.toFixed(2)}%</div>
+                        <div style="color: #86868b; font-size: 15px; margin-top: 8px;">$${digest.topLoser.price.toFixed(2)}</div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            // Key News
+            if (digest.keyNews && digest.keyNews.length > 0) {
+                html += `
+                    <div class="section">
+                        <h2>
+                            <i data-lucide="newspaper"></i>
+                            Key News & Insights
+                        </h2>
+                `;
+
+                digest.keyNews.forEach(item => {
+                    if (item.summary && item.summary !== 'No significant news today.') {
+                        html += `
+                            <div class="news-item">
+                                <div class="news-ticker">${item.ticker}</div>
+                                <div class="news-content">${item.summary}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `</div>`;
+            }
+
+            // Action Items
+            if (digest.actionItems && digest.actionItems.length > 0) {
+                html += `
+                    <div class="section">
+                        <h2>
+                            <i data-lucide="alert-triangle"></i>
+                            Action Items
+                        </h2>
+                `;
+
+                digest.actionItems.forEach(item => {
+                    html += `<div class="action-item">${item}</div>`;
+                });
+
+                html += `</div>`;
+            }
+
+            document.getElementById('digest-content').innerHTML = html;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>News by Holding</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/header.js"></script>
+    <style id="header-css"></style>
+    <style>
+        .stock-grid {
+            display: grid;
+            gap: 20px;
+        }
+        .stock-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #f5f5f7;
+        }
+        .stock-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .stock-card.expanded {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .ticker {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+        .price-info {
+            text-align: right;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        .change {
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .positive { color: #34c759; }
+        .negative { color: #ff3b30; }
+        .summary-preview {
+            color: #86868b;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+        .expanded-content {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f5f5f7;
+        }
+        .stock-card.expanded .expanded-content {
+            display: block;
+        }
+        .ai-summary {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .ai-summary h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ai-summary h3 svg {
+            width: 18px;
+            height: 18px;
+        }
+        .ai-summary p {
+            color: #1d1d1f;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .news-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1d1d1f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .news-section h3 svg {
+            width: 20px;
+            height: 20px;
+        }
+        .news-item {
+            padding: 16px;
+            background: #fafafc;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+        }
+        .news-item:hover {
+            background: #f5f5f7;
+        }
+        .news-title {
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .news-meta {
+            color: #86868b;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .news-desc {
+            color: #515154;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+        .news-link {
+            color: #0071e3;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .news-link:hover {
+            text-decoration: underline;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .last-updated {
+            color: #86868b;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .last-updated svg {
+            width: 16px;
+            height: 16px;
+        }
+        .remove-btn {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .remove-btn:hover {
+            background: #ff453a;
+        }
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+
+    <div class="page-container">
+        <h1>News by Holding</h1>
+        <p class="subtitle">Click any stock to view detailed news and AI analysis</p>
+
+        <div class="controls">
+            <button onclick="updateAll()" class="btn btn-primary">
+                <i data-lucide="refresh-cw"></i>
+                Update All
+            </button>
+            
+            <div class="last-updated">
+                <i data-lucide="clock"></i>
+                <span id="last-updated-time">Loading...</span>
+            </div>
+        </div>
+
+        <div id="portfolio" class="stock-grid">
+            <p style="color: #86868b; text-align: center; padding: 60px 0;">Loading portfolio...</p>
+        </div>
+    </div>
+
+    <script>
+        // Inject header CSS and HTML
+        document.getElementById('header-css').textContent = headerCSS;
+        document.getElementById('header').innerHTML = renderHeader('news');
+
+        let portfolio = JSON.parse(localStorage.getItem('portfolio') || '[]');
+        
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleString('en-AU', { 
+                timeZone: 'Australia/Brisbane',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('last-updated-time').textContent = `Last updated: ${timeStr}`;
+        }
+        
+        window.onload = async () => {
+            lucide.createIcons();
+            updateLastUpdatedTime();
+            
+            console.log('Portfolio:', portfolio);
+            
+            if (portfolio.length === 0) {
+                document.getElementById('portfolio').innerHTML = '<p style="color: #86868b; text-align: center; padding: 60px 0;">No stocks in portfolio. <a href="/holdings.html">Add stocks</a></p>';
+                return;
+            }
+            
+            // Clear loading message
+            document.getElementById('portfolio').innerHTML = '';
+            
+            // Load stocks
+            for (const ticker of portfolio) {
+                await loadStock(ticker);
+            }
+            
+            // Sync with server
+            fetch('/api/sync-portfolio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tickers: portfolio })
+            }).catch(err => console.error('Sync error:', err));
+        };
+        
+        async function loadStock(ticker) {
+            const portfolioDiv = document.getElementById('portfolio');
+            
+            // Clear "no stocks" message if it exists
+            const emptyMessage = portfolioDiv.querySelector('p');
+            if (emptyMessage && emptyMessage.textContent.includes('No stocks')) {
+                portfolioDiv.innerHTML = '';
+            }
+            
+            // Create a new card element
+            const card = document.createElement('div');
+            card.className = 'stock-card';
+            card.id = `card-${ticker}`;
+            card.innerHTML = `<p style="color: #86868b;">Loading ${ticker}...</p>`;
+            portfolioDiv.appendChild(card);
+            
+            try {
+                const response = await fetch(`/api/stock/${ticker}`);
+                const data = await response.json();
+                displayStock(ticker, data);
+            } catch (error) {
+                card.innerHTML = `<p style="color: #ff3b30;">Error loading ${ticker}</p>`;
+            }
+        }
+        
+        function removeTicker(ticker) {
+            portfolio = portfolio.filter(t => t !== ticker);
+            localStorage.setItem('portfolio', JSON.stringify(portfolio));
+            
+            const card = document.getElementById(`card-${ticker}`);
+            if (card) card.remove();
+            
+            if (portfolio.length === 0) {
+                document.getElementById('portfolio').innerHTML = '<p style="color: #86868b; text-align: center; padding: 60px 0;">No stocks in portfolio. <a href="/holdings.html">Add stocks</a></p>';
+            }
+        }
+        
+        function toggleExpand(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.toggle('expanded');
+            }
+        }
+        
+        function displayStock(ticker, data) {
+            const changeClass = data.price.change >= 0 ? 'positive' : 'negative';
+            const changeSign = data.price.change >= 0 ? '+' : '';
+            
+            const summaryPreview = data.summary.length > 150 
+                ? data.summary.substring(0, 150) + '...' 
+                : data.summary;
+            
+            let newsHTML = '';
+            if (data.news && data.news.length > 0) {
+                newsHTML = data.news.slice(0, 5).map(article => {
+                    const date = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Unknown date';
+                    return `
+                        <div class="news-item">
+                            <div class="news-title">${article.title}</div>
+                            <div class="news-meta">${article.source?.name || 'Unknown'} • ${date}</div>
+                            ${article.description ? `<div class="news-desc">${article.description.substring(0, 200)}...</div>` : ''}
+                            <a href="${article.url}" target="_blank" class="news-link">Read more →</a>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                newsHTML = '<p style="color: #86868b;">No recent news available.</p>';
+            }
+            
+            const html = `
+                <div onclick="toggleExpand('card-${ticker}')">
+                    <div class="stock-header">
+                        <div>
+                            <div class="ticker">${ticker}</div>
+                            <div style="color: #86868b; font-size: 13px;">${data.price.currency}</div>
+                        </div>
+                        <div class="price-info">
+                            <div class="price">$${data.price.price?.toFixed(2) || 'N/A'}</div>
+                            <div class="change ${changeClass}">
+                                ${changeSign}${data.price.change?.toFixed(2) || 'N/A'} 
+                                (${changeSign}${data.price.changePercent?.toFixed(2) || 'N/A'}%)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-preview">${summaryPreview}</div>
+                </div>
+                
+                <div class="expanded-content">
+                    <div class="ai-summary">
+                        <h3><i data-lucide="sparkles"></i> AI Analysis</h3>
+                        <p>${data.summary}</p>
+                    </div>
+                    
+                    <div class="news-section">
+                        <h3><i data-lucide="newspaper"></i> Recent News</h3>
+                        ${newsHTML}
+                    </div>
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeTicker('${ticker}')">Remove Stock</button>
+                </div>
+            `;
+            
+            const card = document.getElementById(`card-${ticker}`);
+            if (card) {
+                card.innerHTML = html;
+                lucide.createIcons();
+            }
+        }
+        
+        async function updateAll() {
+            if (!portfolio.length) {
+                alert('No stocks in portfolio');
+                return;
+            }
+            
+            if (!confirm(`Update ${portfolio.length} stocks? This will use API credits.`)) {
+                return;
+            }
+            
+            await fetch('/api/update-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tickers: portfolio })
+            });
+            
+            location.reload();
+        }
+    </script>
+</body>
+</html>
